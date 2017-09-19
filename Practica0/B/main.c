@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <student.h>
+#include <unistd.h>
 #include <main.h>
 
 #ifndef DB_BINARY
@@ -22,6 +23,16 @@ int main(int argc, char** argv)
   char fname[] = "studentDb";
   StudentDb db;
   int action;
+  int c;
+  char *menuOption = NULL;
+
+  while((c = getopt (argc, argv, "o:")) != -1)
+    switch(c)
+    {
+      case 'o':
+      menuOption = optarg;
+      break;
+    }
 
   if ((file = fopen(fname, FILE_OPEN)))
   {
@@ -32,9 +43,9 @@ int main(int argc, char** argv)
     db = initDb(0,NULL,0);
   }
 
-  if(argc > 1)
+  if(menuOption != NULL)
   {
-    sscanf(argv[1], "%d", &action);
+    sscanf(menuOption, "%d", &action);
     executeMenuAction(&db, action);
   }
   else

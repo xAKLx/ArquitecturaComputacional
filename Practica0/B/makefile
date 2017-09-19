@@ -4,4 +4,4 @@ hellomake: main.c student.c
 	gcc -o dbb main2.c student.c -I.
 
 clean:
-	-rm main2.c dba dbb StudentDb -f
+	-rm main2.c dba dbb studentDb -f
