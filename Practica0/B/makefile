@@ -1,7 +1,37 @@
-hellomake: main.c student.c
+BINARY = 1
+
+all: main
+
+main: main.o student.o
+ifeq ($(BINARY),1)
+	gcc -o dbb main.o student.o
+else
+	gcc -o dba main.o student.o
+endif
+
+main.o: main.s
+	gcc -c main.s
+
+main.s: main.i
+	gcc -S main.i
+
+main.i: main.c
+ifeq ($(BINARY),1)
 	@echo "#define DB_BINARY 1" > main2.c
 	cat main.c >> main2.c
-	gcc -o dbb main2.c student.c -I.
+else
+	cat main.c > main2.c
+endif
+	gcc -E main2.c -o main.i
+
+student.o: student.s
+	gcc -c student.s
+
+student.s: student.i
+	gcc -S student.i
+
+student.i: student.c
+	gcc -E student.c -o student.i
 
 clean:
-	-rm main2.c dba dbb studentDb -f
+	-rm main2.c dba dbb main.i main.s main.o student.o student.i student.s studentDb -f

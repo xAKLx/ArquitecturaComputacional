@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <student.h>
+#include "student.h"
 #include <unistd.h>
-#include <main.h>
+#include "main.h"
 
 #ifndef DB_BINARY
 #define BINARY 0

@@ -1,4 +1,4 @@
-#include <student.h>
+#include "student.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
