@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <math.h>
 
 int main(int argc, char** argv)
 {
@@ -91,6 +92,11 @@ int main(int argc, char** argv)
     sscanf(argv[optind], "%u", &number);
 
     printf("%d\n", number | (0b00000001 << bOption));
+  }
+  else if(strcmp(option, "div16") == 0) //2.42
+  {
+    long int value = atol(argv[optind]);
+    printf("\n%ld", (value + ((*((char*)&value) & 0b10000000) >> 7) * 0b00001111 ) >> 4);
   }
 
 }
