@@ -30,8 +30,6 @@ int main(int argc, char** argv)
     }
   }
 
-  puts("hi");
-
   while((c = getopt (argc, argv, "o:b:")) != -1)
     switch(c)
     {
@@ -98,6 +96,16 @@ int main(int argc, char** argv)
   {
     long int value = atol(argv[optind]);
     printf("\n%ld", div16(value));
+  }
+  else if(strcmp(option, "2.59") == 0)
+  {
+    int value1;
+    int value2;
+    
+    sscanf(argv[optind], "%x", &value1);
+    sscanf(argv[optind + 1], "%x", &value2);
+    
+    printf("%x", (value1 & 0x000000FF) + (value2 & 0xFFFFFF00));
   }
 
 }
