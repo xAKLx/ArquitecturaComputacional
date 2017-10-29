@@ -7,6 +7,7 @@
 
 int main(int argc, char** argv)
 {
+  printf("hi");
   int c;
   int value;
   char hexstring[11];
