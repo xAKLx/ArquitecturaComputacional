@@ -1,8 +1,10 @@
+all: cmix amix
 
+cmix: cmix.c func.S
+	gcc -o cmix func.S cmix.c
 
-test: test.c func.S
-	gcc -o test func.S test.c
-	
-	
+amix: amix.s
+	gcc -nostdlib amix.s -o amix
+
 clean:
-	rm -f test
+	rm -f cmix amix
