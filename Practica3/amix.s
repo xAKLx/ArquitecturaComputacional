@@ -87,6 +87,19 @@ strLength:
 .LC1:
 	retq
 
+putc:
+  sub $1, %rsp
+  movb %dil, (%rsp)
+
+	mov $1, %rdx
+	mov $1, %rax
+	mov %rsp, %rsi          # address of string to output
+	mov $1, %rdi                # file handle 1 is stdout
+	syscall
+
+  add $1, %rsp
+  retq
+
 puts:
 	call strLength
 	mov %rax, %rdx
@@ -170,8 +183,8 @@ upperCaseMenu:
   sub $0x20, 8(%rsp)
 
 .LC11:
-  lea 8(%rsp), %rdi
-  callq puts
+  movb 8(%rsp), %dil
+  callq putc
   jmp .LC12
 
 .LC10:
