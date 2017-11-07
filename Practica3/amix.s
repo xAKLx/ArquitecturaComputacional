@@ -4,9 +4,32 @@
         .text
 _start:
 
-        mov $55, %rdi
-        mov $0, %rsi
-        callq itoa
+        #mov $2, %rax
+        #mov $0, %rsi
+        #mov $0, %rdx
+        #mov $file, %rdi
+        #syscall
+
+        #movb $1, 3(%rsp)
+        #mov %rax, %r9
+
+        #mov %rax, %rdi
+        #mov $0, %rax
+				#mov %rsp, %rsi
+				#mov $1, %rdx
+				#syscall
+
+        #movl $0, (%rsp)
+
+        #mov %r9, %rdi
+        #mov $0, %rax
+				#mov %rsp, %rsi
+				#mov $1, %rdx
+				#syscall
+
+        #mov %rax, %rdi
+        #mov $3, %rax
+        #syscall
 
 				mov $message, %rdi
 				callq puts
@@ -22,7 +45,8 @@ _start:
 				jne .OPT2
         callq catchReturn
 				callq fibonacciMenu
-        jmp .OPT2
+        jmp .LC13
+
 
 				mov     $1, %rax                # system call 1 is write
         mov     $1, %rdi                # file handle 1 is stdout
@@ -31,6 +55,9 @@ _start:
         syscall
 
 .OPT2:
+        callq catchReturn
+        callq upperCaseMenu
+.LC13:
         # exit(0)
         mov     $60, %rax               # system call 60 is exit
         xor     %rdi, %rdi              # we want return code 0
@@ -98,6 +125,62 @@ getNumber:
 	mov %rcx, %rax
 	retq
 
+removeNewLine:
+  callq strLength
+  movb $0, -1(%rdi,%rax,1)
+  retq
+
+upperCaseMenu:
+  sub $509, %rsp
+  mov $uppercaseHeader, %rdi
+  callq puts
+
+  mov $0, %rax
+  mov $0, %rdi
+  lea 9(%rsp), %rsi
+  mov $500, %rdx
+  syscall
+
+  lea 9(%rsp), %rdi
+  callq removeNewLine
+
+  mov $2, %rax
+  mov $0, %rsi
+  mov $0, %rdx
+  lea 9(%rsp), %rdi
+  syscall
+  push %rax
+
+.LC12:
+  movb $-1, 8(%rsp)
+  movb $0, 9(%rsp)
+
+  movq (%rsp), %rdi
+  mov $0, %rax
+  lea 8(%rsp), %rsi
+  mov $1, %rdx
+  syscall
+  cmpb $-1, 8(%rsp)
+  je .LC10
+
+  cmpb $0x61, 8(%rsp)
+  jb .LC11
+  cmpb $0x7a, 8(%rsp)
+  ja .LC11
+  sub $0x20, 8(%rsp)
+
+.LC11:
+  lea 8(%rsp), %rdi
+  callq puts
+  jmp .LC12
+
+.LC10:
+  movq (%rsp), %rdi
+  mov $3, %rax
+  syscall
+  add $509, %rsp
+  retq
+
 fibonacciMenu:
 	sub $4, %rsp
 	movq $0, (%rsp)
@@ -141,6 +224,8 @@ fibonacciMenu:
 .LC8:
 	add $4, %rsp
 	retq
+
+
 
 getFibonacci:
   sub $16, %rsp
@@ -231,5 +316,11 @@ fibonacciBuffer:
         .string "26863810024485359386146727202142923967616609318986952340123175997617981700247881689338369654483356564191827856161443356312976673642210350324634850410377680367334151172899169723197082763985615764450078474174626"
 fibonacciNumbersHeader:
   .string "Los primeros elementos de la serie son:"
+uppercaseHeader:
+  .string "Introduzca el nombre del archivo:"
 nl:
   .string "\n"
+file:
+  .string "x.txt"
+filenameBuffer:
+  .string "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
