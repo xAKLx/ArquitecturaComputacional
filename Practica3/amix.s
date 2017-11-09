@@ -3,34 +3,7 @@
 
         .text
 _start:
-
-        #mov $2, %rax
-        #mov $0, %rsi
-        #mov $0, %rdx
-        #mov $file, %rdi
-        #syscall
-
-        #movb $1, 3(%rsp)
-        #mov %rax, %r9
-
-        #mov %rax, %rdi
-        #mov $0, %rax
-				#mov %rsp, %rsi
-				#mov $1, %rdx
-				#syscall
-
-        #movl $0, (%rsp)
-
-        #mov %r9, %rdi
-        #mov $0, %rax
-				#mov %rsp, %rsi
-				#mov $1, %rdx
-				#syscall
-
-        #mov %rax, %rdi
-        #mov $3, %rax
-        #syscall
-
+.LC14:
 				mov $message, %rdi
 				callq puts
 
@@ -42,7 +15,7 @@ _start:
 
 				sub $48, (%rsp)
 				cmp $1, (%rsp)
-				jne .OPT2
+				jne .LC15
         callq catchReturn
 				callq fibonacciMenu
         jmp .LC13
@@ -54,14 +27,11 @@ _start:
         mov     $27, %rdx               # number of bytes
         syscall
 
-.OPT2:
+.LC15:
         callq catchReturn
         callq upperCaseMenu
 .LC13:
-        # exit(0)
-        mov     $60, %rax               # system call 60 is exit
-        xor     %rdi, %rdi              # we want return code 0
-        syscall                         # invoke operating system to exit
+        jmp .LC14                     
 
 catchReturn:
   sub $1, %rsp
@@ -144,7 +114,7 @@ removeNewLine:
   retq
 
 upperCaseMenu:
-  sub $509, %rsp
+  sub $512, %rsp
   mov $uppercaseHeader, %rdi
   callq puts
 
@@ -188,10 +158,10 @@ upperCaseMenu:
   jmp .LC12
 
 .LC10:
-  movq (%rsp), %rdi
+  pop %rdi
   mov $3, %rax
   syscall
-  add $509, %rsp
+  add $512, %rsp
   retq
 
 fibonacciMenu:
@@ -337,3 +307,5 @@ file:
   .string "x.txt"
 filenameBuffer:
   .string "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+oldFibonacciBuffer:
+  .zero 4000
