@@ -12,11 +12,12 @@ _start:
 				mov %rsp, %rsi
 				mov $1, %rdx
 				syscall
+        callq catchReturn
 
 				sub $48, (%rsp)
 				cmp $1, (%rsp)
 				jne .LC15
-        callq catchReturn
+
 				callq fibonacciMenu
         jmp .LC13
 
@@ -28,10 +29,9 @@ _start:
         syscall
 
 .LC15:
-        callq catchReturn
         callq upperCaseMenu
 .LC13:
-        jmp .LC14                     
+        jmp .LC14
 
 catchReturn:
   sub $1, %rsp
@@ -165,7 +165,7 @@ upperCaseMenu:
   retq
 
 fibonacciMenu:
-	sub $4, %rsp
+	sub $20, %rsp
 	movq $0, (%rsp)
 
   mov $fibonacciMenuStr, %rdi
@@ -176,6 +176,7 @@ fibonacciMenu:
 	mov %rsp, %rsi
 	mov $3, %rdx
 	syscall
+  callq catchReturn
 
   mov $fibonacciNumbersHeader, %rdi
   callq puts
@@ -188,40 +189,36 @@ fibonacciMenu:
 .LC9:
   cmp %rdi, %rsi
   ja .LC8
-
-  sub $16, %rsp
-  mov %rdi, (%rsp)
+  mov %rdi, 4(%rsp)
   mov %rsi, %rdi
-  mov %rsi, 8(%rsp)
+  mov %rsi, 12(%rsp)
   callq getFibonacci
   mov %rax, %rdi
   mov $0, %rsi
   callq itoa
   mov %rax, %rdi
   callq puts
-  mov (%rsp), %rdi
-  mov 8(%rsp), %rsi
+  mov 4(%rsp), %rdi
+  mov 12(%rsp), %rsi
   add $1, %rsi
   jmp .LC9
 
 .LC8:
-	add $4, %rsp
+	add $20, %rsp
 	retq
-
-
 
 getFibonacci:
   sub $16, %rsp
   cmp $2, %rdi
 
-  jb .F02
+  jb .LC17
   mov $oldFibonacciBuffer, %r9
-  cmp $0, (%r9, %rdi, 4)
-  je .F16
-  movq (%r9, %rdi, 4), %rax
-  jmp .F01
-  
-.F16:
+  cmp $0, (%r9, %rdi, 8)
+  je .LC16
+  movq (%r9, %rdi, 8), %rax
+  jmp .LC18
+
+.LC16:
   mov %rdi, (%rsp)
 
   sub $1, %rdi
@@ -233,13 +230,13 @@ getFibonacci:
   callq getFibonacci
 
   add 8(%rsp), %rax
-  pop %rdi
+  mov (%rsp), %rdi
   mov $oldFibonacciBuffer, %r9
-  movq %rax, (%r9, %rdi, 4)
-  jmp .F01
-.F02:
+  movq %rax, (%r9, %rdi, 8)
+  jmp .LC18
+.LC17:
   mov %rdi, %rax
-.F01:
+.LC18:
   add $16, %rsp
   retq
 
@@ -301,6 +298,7 @@ memcpy:
 .LC5:
   retq
 
+  .data
 message:
         .string  "1. Fibonacci\n2. Upper case"
 fibonacciMenuStr:
@@ -318,5 +316,4 @@ file:
 filenameBuffer:
   .string "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
 oldFibonacciBuffer:
-  .zero 4000
-  
+  .zero 8000
