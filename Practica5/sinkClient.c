@@ -17,7 +17,6 @@ void onClose(int sig){ // can be called asynchronously
 
 int main(int argc , char *argv[])
 {
-
     sock = socket(AF_INET , SOCK_STREAM , 0);
     if (sock == -1)
     {
@@ -43,6 +42,7 @@ int main(int argc , char *argv[])
     else {
       signal(SIGINT, onClose);
       messageSenderPrompt(sock);
+
     }
     return 0;
 }
@@ -70,7 +70,6 @@ int initSession(char *id, int socket, char *ip)
 
     if (connect(socket , (struct sockaddr *)&server , sizeof(server)) < 0)
     {
-      puts("1");
         return 0;
     }
 
@@ -79,19 +78,37 @@ int initSession(char *id, int socket, char *ip)
     if( send(socket , message1 , strlen(message1) , 0) < 0
         || recv(socket , server_reply , 3 , 0) < 0)
     {
-      puts("2");
         free(message1);
         return 0;
     }
 
     free(message1);
-    puts(server_reply);
     return server_reply[0] == 'O' && server_reply[1] == 'K';
 }
 
 void keepAlive(int sock)
 {
-    return;
+    unsigned int number = (unsigned int)(rand()%100) + 1;
+    char message[6];
+    memset(message, 0, 6);
+    message[0] = 'K';
+
+    char *numberBytes;
+
+    while(1) {
+      sleep(30);
+      numberBytes = (char*)&number;
+      message[1] = numberBytes[0];
+      message[2] = numberBytes[1];
+      message[3] = numberBytes[2];
+      message[4] = numberBytes[3];
+      if( send(sock , message , strlen(message) , 0) < 0 )
+      {
+          puts("Send keep alive failed");
+      }
+      number++;
+    };
+
 }
 
 void messageSenderPrompt(int sock)

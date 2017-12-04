@@ -25,7 +25,7 @@ void initEvent(Event * event, char * eventData)
       break;
 
       case 'K':
-        event->keepAliveNumber = *((int *)(eventData+1));
+        event->keepAliveNumber = *(unsigned int *)(eventData + 1);
       break;
 
     }
@@ -40,7 +40,7 @@ void printEvent(Event event)
       break;
 
       case 'M':
-        printf(" [Mensaje] - %s\n", event.message);
+        printf(" [Mensaje] - %s", event.message);
       break;
 
       case 'K':

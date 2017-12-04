@@ -57,6 +57,7 @@ int main(int argc, int argv)
         Event event;
         char *id;
         //Receive a message from client
+        memset(client_message, 0, 100);
         while( (read_size = recv(client_sock , client_message , 2000 , 0)) > 0 )
         {
             //Send the message back to client
@@ -72,6 +73,7 @@ int main(int argc, int argv)
               event.id = id;
             }
             printEvent(event);
+            memset(client_message, 0, 100);
         }
 
         if(read_size == 0)
