@@ -123,5 +123,10 @@ void messageSenderPrompt(int sock)
 
 void closeConnection(int sock)
 {
+    if( send(sock , "C" , 1 , 0) < 0 )
+    {
+        puts("Failed to send close message");
+    }
+
     close(sock);
 }
