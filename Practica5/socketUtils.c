@@ -7,3 +7,7 @@ void createServerSocket(struct sockaddr_in * server, unsigned long serverAddress
   server->sin_family = AF_INET;
   server->sin_port = htons( PORT );
 }
+
+int createSocket() {
+    return socket(AF_INET , SOCK_STREAM , 0);
+}

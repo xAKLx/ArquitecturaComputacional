@@ -10,9 +10,9 @@
 int sock;
 
 void onClose(int sig){ // can be called asynchronously
-  closeConnection(sock);
-  signal(SIGINT, SIG_DFL);
-  kill(getpid(), SIGINT);
+    closeConnection(sock);
+    signal(SIGINT, SIG_DFL);
+    kill(getpid(), SIGINT);
 }
 
 int main(int argc , char *argv[])
@@ -92,11 +92,13 @@ void keepAlive(int sock)
     char message[6];
     memset(message, 0, 6);
     message[0] = 'K';
+    char reply[4];
+    unsigned int replyNumber;
 
     char *numberBytes;
 
     while(1) {
-      sleep(30);
+      sleep(2);
       numberBytes = (char*)&number;
       message[1] = numberBytes[0];
       message[2] = numberBytes[1];
@@ -106,6 +108,20 @@ void keepAlive(int sock)
       {
           puts("Send keep alive failed");
       }
+
+      if( recv(sock , reply , 4 , 0) < 0 )
+      {
+          puts("Reply failed for keep alive");
+          break;
+      }
+
+      replyNumber = *(unsigned int*)reply;
+      if((replyNumber & number) != 0)
+      {
+          puts("Reply failed for keep alive, invalid response number");
+          break;
+      }
+
       number++;
     };
 
@@ -128,12 +144,16 @@ void messageSenderPrompt(int sock)
             puts("Send failed");
         }
 
-        if( recv(sock , reply , 2 , 0) < 0 || 0 != strcmp("OK", reply) )
+        memset(reply, 0, 3);
+        if( recv(sock , reply , 2 , 0) < 0 )
         {
             puts("Reply failed");
         }
 
-        memset(reply, 0, 3);
+        if( 0 != strcmp("OK", reply) ) {
+          puts("Response is not OK");
+          puts(reply);
+        }
         free(message);
     }
 }

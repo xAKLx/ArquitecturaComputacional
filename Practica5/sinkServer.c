@@ -6,11 +6,37 @@
 #include<arpa/inet.h>
 #include "socketUtils.h"
 #include "event.h"
+#include "sinkServer.h"
+#include<pthread.h>
+
+EventBuffer * eventBuffer;
+int socket_desc;
+pthread_t tid[2];
+
+void* doSomeThing(void *arg)
+{
+    unsigned long i = 0;
+    pthread_t id = pthread_self();
+/*
+    if(pthread_equal(id,tid[0]))
+    {
+        startMenu(eventBuffer);
+    }
+    else
+    {
+        handleClientsConnection(socket_desc, eventBuffer);
+    }*/
+
+    handleClientsConnection(socket_desc, eventBuffer);
+
+    for(i=0; i<(0xFFFFFFFF);i++);
+
+    return NULL;
+}
 
 int main(int argc, int argv)
 {
-    int socket_desc , client_sock , c , read_size;
-    struct sockaddr_in client;
+    int client_sock , c , read_size;
     struct sockaddr_in server;
     createServerSocket(&server, INADDR_ANY);
     char client_message[2000];
@@ -34,59 +60,171 @@ int main(int argc, int argv)
 
     //Listen
     listen(socket_desc , 3);
+    eventBuffer = calloc(1, sizeof(EventBuffer));
+    initEventBuffer(eventBuffer);
 
-    while(1) {
-        //Accept and incoming connection
-        puts("Waiting for incoming connections...");
-        c = sizeof(struct sockaddr_in);
+    int err;
+    int i = 0;
+    /*
+    while(i < 2)
+    {
+        err = pthread_create(&(tid[i]), NULL, &doSomeThing, NULL);
+    }*/
 
-        //accept connection from an incoming client
-        client_sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c);
-        if (client_sock < 0)
-        {
-            perror("accept failed");
-            return 1;
-        }
-        puts("Connection accepted");
+    pthread_create(&(tid[i]), NULL, &doSomeThing, NULL);
 
-        int pid = fork();
-
-        if(pid != 0)
-            continue;
-
-        Event event;
-        char *id;
-        //Receive a message from client
-        memset(client_message, 0, 100);
-        while( (read_size = recv(client_sock , client_message , 2000 , 0)) > 0 )
-        {
-            //Send the message back to client
-            write(client_sock , "OK" , strlen(client_message));
-            //puts(client_message);
-
-            initEvent(&event, client_message);
-            if(event.type == 'I') {
-              id = event.id;
-            }
-            else
-            {
-              event.id = id;
-            }
-            printEvent(event);
-            memset(client_message, 0, 100);
-        }
-
-        if(read_size == 0)
-        {
-            puts("Client disconnected");
-            fflush(stdout);
-        }
-        else if(read_size == -1)
-        {
-            perror("recv failed");
-        }
-        break;
-    }
+    startMenu(eventBuffer);
+    while(1);
 
     return 0;
+}
+
+void* handleClientThread(void *arg)
+{
+    handleClient(*(int *)arg, eventBuffer);
+}
+
+void handleClientsConnection(int sock, EventBuffer * eventBuffer)
+{
+    int client_sock;
+    int *tmpSock;
+    struct sockaddr_in client;
+    int c = sizeof(struct sockaddr_in);
+    pthread_t threadId;
+    int val;
+
+
+    while(1) {
+        client_sock = accept(sock, (struct sockaddr *)&client, (socklen_t*)&c);
+        if (client_sock < 0)
+        {
+            puts("accept failed");
+        }
+
+        tmpSock = (int *) calloc(1, sizeof(int));
+        *tmpSock = client_sock;
+
+        //handleClient(client_sock, eventBuffer);
+        pthread_create(&(threadId), NULL, &handleClientThread, tmpSock);
+    }
+}
+
+void handleClient(int client_sock, EventBuffer * eventBuffer)
+{
+    int read_size, endWhile = 0, keepAliveResponse;
+    Event *event;
+    char *id;
+    //Receive a message from client
+    char * client_message = (char *) calloc(1000, sizeof(char));
+    memset(client_message, 0, 1000);
+    while( (read_size = recv(client_sock , client_message , 1000 , 0)) > 0 )
+    {
+        event = calloc(1, sizeof(Event));
+        initEvent(event, client_message);
+
+        switch(event->type) {
+            case 'I':
+              id = (char *) calloc(strlen(event->id) +1, sizeof(char));
+              strcpy(id, event->id);
+              write(client_sock , "OK" , 3);
+            break;
+
+            case 'M':
+              write(client_sock , "OK" , 3);
+            break;
+
+            case 'K':
+              keepAliveResponse = ~event->keepAliveNumber;
+              write(client_sock , (char *) &keepAliveResponse, 4);
+            break;
+        }
+
+        if(event->type != 'I')
+        {
+          event->id = id;
+        }
+
+        insertEvent(eventBuffer, event);
+        if(event->type == 'C')
+          break;
+        memset(client_message, 0, 1000);
+    }
+
+    if(read_size == 0)
+    {
+        puts("Client disconnected");
+        fflush(stdout);
+    }
+    else if(read_size == -1)
+    {
+        perror("recv failed");
+    }
+}
+
+void startMenu(EventBuffer * eventBuffer)
+{
+    int option;
+    while(1) {
+
+        puts("\nBienvenido a Message Sink\n");
+        puts("1. Ver eventos ");
+        puts("2. Ver cantidad de eventos en cola ");
+        puts("3. Borrar cola de eventos\n");
+        puts("Introduzca una opcion: ");
+        fscanf(stdin, "%d", &option);
+
+        switch(option)
+        {
+            case 1:
+              viewEvents(eventBuffer);
+            break;
+
+            case 2:
+              viewEventsQuantity();
+            break;
+
+            case 3:
+              removeEventsFromQueue();
+            break;
+
+        }
+    }
+
+
+    viewEvents(eventBuffer);
+}
+
+void viewEvents(EventBuffer * eventBuffer)
+{
+    Event * event;
+    while(1)
+    {
+        puts("time to poke!");
+        event = pokeEvent(eventBuffer);
+        puts("time to print!");
+        printEvent(*event);
+    }
+}
+
+void viewEventsSignalHandler(int sig)
+{
+
+}
+
+void viewEventsQuantity()
+{
+    int i;
+    sem_getvalue(&eventBuffer->items, &i);
+    fprintf(stdout, "Eventos en cola : %d", i);
+}
+
+void removeEventsFromQueue()
+{
+    int i;
+    sem_getvalue(&eventBuffer->items, &i);
+
+    while(eventBuffer->first != NULL) {
+      pokeEvent(eventBuffer);
+    }
+    fprintf(stdout, "Eventos borrados : %d", i);
 }
