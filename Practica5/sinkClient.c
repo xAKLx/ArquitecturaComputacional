@@ -36,7 +36,7 @@ int main(int argc , char *argv[])
         closeConnection(sock);
         return 1;
     }
-    else if(0 == pid) {
+    else if(0 != pid) {
       keepAlive(sock);
     }
     else {
@@ -98,7 +98,7 @@ void keepAlive(int sock)
     char *numberBytes;
 
     while(1) {
-      sleep(2);
+      sleep(30);
       numberBytes = (char*)&number;
       message[1] = numberBytes[0];
       message[2] = numberBytes[1];
@@ -119,6 +119,7 @@ void keepAlive(int sock)
       if((replyNumber & number) != 0)
       {
           puts("Reply failed for keep alive, invalid response number");
+          kill(getpid(), SIGINT);
           break;
       }
 

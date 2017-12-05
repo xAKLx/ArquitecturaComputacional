@@ -8,6 +8,7 @@
 #include "event.h"
 #include "sinkServer.h"
 #include<pthread.h>
+#include<signal.h>
 
 EventBuffer * eventBuffer;
 int socket_desc;
@@ -126,11 +127,11 @@ void handleClient(int client_sock, EventBuffer * eventBuffer)
             case 'I':
               id = (char *) calloc(strlen(event->id) +1, sizeof(char));
               strcpy(id, event->id);
-              write(client_sock , "OK" , 3);
+              write(client_sock , "OK" , 2);
             break;
 
             case 'M':
-              write(client_sock , "OK" , 3);
+              write(client_sock , "OK" , 2);
             break;
 
             case 'K':
@@ -163,6 +164,7 @@ void handleClient(int client_sock, EventBuffer * eventBuffer)
 
 void startMenu(EventBuffer * eventBuffer)
 {
+    signal(SIGINT, SIG_DFL);
     int option;
     while(1) {
 
@@ -196,19 +198,18 @@ void startMenu(EventBuffer * eventBuffer)
 
 void viewEvents(EventBuffer * eventBuffer)
 {
+    signal(SIGINT, viewEventsSignalHandler);
     Event * event;
     while(1)
     {
-        puts("time to poke!");
         event = pokeEvent(eventBuffer);
-        puts("time to print!");
         printEvent(*event);
     }
 }
 
 void viewEventsSignalHandler(int sig)
 {
-
+    startMenu(eventBuffer);
 }
 
 void viewEventsQuantity()

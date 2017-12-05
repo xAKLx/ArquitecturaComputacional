@@ -110,6 +110,7 @@ void insertEvent(EventBuffer * eventBuffer, Event * event)
 
     if(eventBuffer->last != NULL) {
       eventBuffer->last->next = node;
+      eventBuffer->last = node;
     }
     else
     {
@@ -142,6 +143,6 @@ Event * pokeEvent(EventBuffer *eventBuffer)
 
     destroyEventNode(node);
     sem_post(&eventBuffer->mutex);
-
+    
     return event;
 }
